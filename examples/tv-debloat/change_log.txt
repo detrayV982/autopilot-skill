@@ -1,0 +1,155 @@
+# TV Debloat Log - TCL 40S350G (Google TV)
+# Started: 2026-10-20
+# ADB: 192.0.2.10:5555
+# Default launcher: com.google.android.apps.tv.launcherx
+# Android 11, SDK 30
+
+## Backup
+- packages_all.txt       - 138 packages total
+- packages_system.txt    - 122 system packages
+- packages_third_party.txt - 16 third-party packages
+- packages_disabled.txt  - 0 already disabled
+- default_launcher.txt   - com.google.android.apps.tv.launcherx
+- homescreen_original.png - stock home screen screenshot
+
+## Changes
+## Batch 1 - Tue Oct 20 16:19:33 PDT 2026
+  com.google.android.youtube.tvmusic: Package com.google.android.youtube.tvmusic new state: disabled-user
+  com.google.android.youtube.tvunplugged: Package com.google.android.youtube.tvunplugged new state: disabled-user
+  com.google.android.videos: Package com.google.android.videos new state: disabled-user
+  com.google.android.play.games: Package com.google.android.play.games new state: disabled-user
+  com.nbaimd.gametime.nba2011: Package com.nbaimd.gametime.nba2011 new state: disabled-user
+  com.bamnetworks.mobile.android.gameday.atbat: Package com.bamnetworks.mobile.android.gameday.atbat new state: disabled-user
+  com.tubitv: Package com.tubitv new state: disabled-user
+  com.fubo.firetv.screen: Package com.fubo.firetv.screen new state: disabled-user
+  com.discovery.discoveryplus.androidtv: Package com.discovery.discoveryplus.androidtv new state: disabled-user
+  com.spotify.tv.android: Package com.spotify.tv.android new state: disabled-user
+## Batch 2 - Tue Oct 20 16:24:49 PDT 2026
+  com.tcl.esticker: Package com.tcl.esticker new state: disabled-user
+  com.tcl.tv.plus: Package com.tcl.tv.plus new state: disabled-user
+  com.tcl.channelplus: Package com.tcl.channelplus new state: disabled-user
+  com.tcl.messagebox: Package com.tcl.messagebox new state: disabled-user
+  com.tcl.copydatatotv: Package com.tcl.copydatatotv new state: disabled-user
+  com.tcl.useragreement: Package com.tcl.useragreement new state: disabled-user
+  com.tcl.factory.view: Package com.tcl.factory.view new state: disabled-user
+  com.tcl.autopair: Package com.tcl.autopair new state: disabled-user
+  com.tcl.initsetup: Package com.tcl.initsetup new state: disabled-user
+  com.android.printspooler: Package com.android.printspooler new state: disabled-user
+  com.android.providers.calendar: Package com.android.providers.calendar new state: disabled-user
+  com.google.android.syncadapters.calendar: Package com.google.android.syncadapters.calendar new state: disabled-user
+  com.google.android.tungsten.setupwraith: Package com.google.android.tungsten.setupwraith new state: disabled-user
+  com.google.android.onetimeinitializer: Package com.google.android.onetimeinitializer new state: disabled-user
+## Batch 3 - Tue Oct 20 16:33:35 PDT 2026
+  com.tcl.smartalexa: Package com.tcl.smartalexa new state: disabled-user
+  com.tcl.t_solo: Package com.tcl.t_solo new state: disabled-user
+  com.tcl.ui_mediaCenter: Package com.tcl.ui_mediaCenter new state: disabled-user
+  com.tcl.usercenter: Package com.tcl.usercenter new state: disabled-user
+  com.tcl.suspension: Package com.tcl.suspension new state: disabled-user
+  com.tcl.tv.tclchannel: Package com.tcl.tv.tclchannel new state: disabled-user
+  com.tcl.partnercustomizer: Package com.tcl.partnercustomizer new state: disabled-user
+  com.tcl.common.shortcutmenu: Package com.tcl.common.shortcutmenu new state: disabled-user
+  com.android.backupconfirm: Package com.android.backupconfirm new state: disabled-user
+  com.android.soundpicker: Package com.android.soundpicker new state: disabled-user
+  com.android.htmlviewer: Package com.android.htmlviewer new state: disabled-user
+  com.google.android.apps.nbu.smartconnect.tv: Package com.google.android.apps.nbu.smartconnect.tv new state: disabled-user
+## Disable Google TV launcher - Tue Oct 20 17:00:28 PDT 2026
+Package com.google.android.apps.tv.launcherx new state: disabled-user
+## Reboot test - Tue Oct 20 17:43:21 PDT 2026
+## Catch-up (autonomous run) - Tue Oct 20 20:30 PDT 2026
+Package: com.spocky.projengmenu v4.72. READ_EXTERNAL_STORAGE already granted=true. Accessibility service enabled (ProjectivyAccessibilityService).
+/sdcard/Download: wallpaper_japan.mp4 34725503 B, wallpaper_tv.mp4 69689056 B.
+Wallpaper Uri=file:///sdcard/Download/wallpaper_japan.mp4. Video toggle found OFF again; turned ON via UI.
+Disabled-vs-restore.sh diff: dreamx (com.google.android.apps.tv.dreamx) disabled but missing from restore.sh; com.tcl.smartalexa and com.tcl.usercenter are in restore.sh and the change_log but currently ENABLED (earlier re-enabled). screensaver_enabled=0 (set on purpose to stop dreamx covering the launcher).
+Diagnosis: home shows a still frame of Japan video; no codec/decoder activity at idle and clean crop md5 identical across 3 captures => not playing, even with Video ON + restart. Only a thumbnail decode seen at launch.
+Tue Oct 20 20:28:42 PDT 2026 reboot to clear crashed accessibility service
+note: am force-stop of Projectivy unbinds its a11y service; reboot also nulls enabled_accessibility_services
+Tue Oct 20 20:31:15 PDT 2026 reboot #2 to clear crash flag set by force-stop
+Tue Oct 20 20:34:00 PDT 2026 a11y service bound after settings delete+put cycle (post-reboot #2). Plan updated by user: no force-stop; reboot to restart Projectivy.
+## Step 2a findings - Tue Oct 20 ~20:36 PDT
+ro.config.low_ram=true (low-RAM TV). Animation scales: animator null(default 1.0), transition 1.0, window 1.0 - fine. Projectivy Power and Launcher Idle Mode screens: nothing that pauses video. a11y service bound; media.resource_manager shows no live video codec for Projectivy. Debug logcat saved to video_debug.txt.
+## Step 2c - Tue Oct 20 20:42 PDT
+ROOT CAUSE FOUND: video plays only while Projectivy's accessibility service is bound. Chosen via picker: /sdcard/Download/test_motion.mp4 (pushed with adb push) - counter region md5 changed across 3 captures and Projectivy registered a video codec in media.resource_manager => test clip MOVES. So TV + Projectivy can play video; earlier failures were a11y not bound (crashed by force-stop / nulled by reboot).
+Next: pick original wallpaper_japan.mp4 via picker with a11y bound.
+## Step 2 RESULT - Tue Oct 20 20:44 PDT
+Picked original wallpaper_japan.mp4 (34725503 B, /sdcard/Download) via Projectivy "Pick image/video" with a11y bound. Home-screen crop md5 differs on every capture (3+3 captures, 30s apart) => village video MOVING. Final wallpaper file: /sdcard/Download/wallpaper_japan.mp4 (safe/720/webp not needed). test_motion.mp4 left in /sdcard/Download.
+Requirement: Projectivy a11y service must be enabled+bound: settings put secure enabled_accessibility_services com.spocky.projengmenu/com.spocky.projengmenu.services.ProjectivyAccessibilityService; accessibility_enabled 1 (if not bound: settings delete secure enabled_accessibility_services, accessibility_enabled 0, then put again). Never am force-stop Projectivy.
+## Step 3 start - Tue Oct 20 ~20:55 PDT
+Original dock order: BrowseHere, Crunchyroll, Disney+, HBO Max, Hulu, Netflix, Paramount+, Apple TV, Peacock, Prime Video, Safety Guard, TCL Home, TV, Twitch, Works with Alexa, YouTube.
+Plan of left-moves: YouTube 15, Hulu 4, Netflix 4, HBO 3, Crunchyroll 1, Prime 5, Paramount 2, Apple TV 3, Peacock 3, Disney+ 2. Method: Projectivy long-press > reorder.
+Tue Oct 20 21:07:40 PDT 2026 YouTube moved to position 1 via long-press>Reorder
+Tue Oct 20 21:08:24 PDT 2026 Hulu moved 4 left
+Tue Oct 20 21:09:11 PDT 2026 Netflix moved 4 left
+Tue Oct 20 21:09:43 PDT 2026 HBO Max moved 3 left
+Tue Oct 20 21:10:12 PDT 2026 Crunchyroll moved 1 left
+Tue Oct 20 21:10:52 PDT 2026 Prime Video moved 5 left
+Tue Oct 20 21:11:36 PDT 2026 Paramount+ moved 2 left
+Tue Oct 20 21:12:08 PDT 2026 Apple TV moved 2 left
+Tue Oct 20 21:12:39 PDT 2026 Peacock moved 2 left
+Tue Oct 20 21:13:08 PDT 2026 Disney+ moved 1 left
+Tue Oct 20 21:13:20 PDT 2026 Step 3 reorder complete: YouTube,Hulu,Netflix,HBO Max,Crunchyroll,Prime,Paramount+,Apple TV,Peacock,Disney+,BrowseHere,Safety Guard,TCL Home,TV,Twitch,Works with Alexa. Play Store not in TV Apps row; checking.
+Tue Oct 20 21:16:56 PDT 2026 Play Store toggle turned ON in TV Apps > Manage apps (was off from earlier session; plan says hide nothing)
+Tue Oct 20 21:19:06 PDT 2026 Row verified: YouTube,Hulu,Netflix,HBO,Crunchyroll,Prime,Paramount+,Apple TV,Peacock,Disney+,BrowseHere,Safety Guard,TCL Home,TV,Twitch,Works with Alexa (Play Store toggled on but not yet showing in row; recheck after reboot)
+Tue Oct 20 21:21:15 PDT 2026 Play Store moved from front to end of TV Apps row
+Tue Oct 20 21:21:49 PDT 2026 com.tcl.autopair RE-ENABLED (pm enable --user 0). Reason: manifest has no activities/UI; only BootBroadcastReceiver for tcl.sys.intent.action.START_AUTOPAIR/START_SILENTPAIR + Bluetooth perms => remote auto-pairing, no ads/popups. Must be removed from restore.sh list since it's no longer disabled.
+## Step 4 app test (Home) - Tue Oct 20 21:25:49 PDT 2026
+home YouTube | in-app: com.google.android.youtube.tv/com.google.android.apps.youtube.tv.activity.MainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Hulu | in-app: com.hulu.livingroomplus/.WKFactivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Netflix | in-app: com.netflix.ninja/.MainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home HBOMax | in-app: com.wbd.stream/com.wbd.beam.BeamActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Crunchyroll | in-app: com.crunchyroll.crunchyroid/.main.ui.MainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Prime | in-app: com.amazon.amazonvideo.livingroom/com.amazon.ignition.IgnitionActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Paramount | in-app: com.cbs.ott/com.cbs.app.tv.ui.activity.HomeActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home AppleTV | in-app: com.apple.atve.androidtv.appletv/.MainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Peacock | in-app: com.peacocktv.peacockandroid/com.peacock.peacocktv.GoogleMainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home Disney | in-app: com.disney.disneyplus/com.bamtechmedia.dominguez.main.MainActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+home BrowseHere | in-app: com.tcl.browser/.portal.home.activity.MainPageActivity | after: com.spocky.projengmenu/.ui.home.MainActivity
+## Step 4 app test (Back) - Tue Oct 20 21:35:04 PDT 2026
+YouTube: 1 Back OK
+back Hulu | in-app: com.hulu.livingroomplus/.WKFactivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Netflix | in-app: com.netflix.ninja/.MainActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back HBOMax | in-app: com.wbd.stream/com.wbd.beam.BeamActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Crunchyroll | in-app: com.crunchyroll.crunchyroid/.main.ui.MainActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Prime | in-app: com.amazon.amazonvideo.livingroom/com.amazon.ignition.IgnitionActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Paramount | in-app: com.cbs.ott/com.cbs.app.tv.ui.activity.HomeActivity | result: 1 Back | final: com.spocky.projengmenu/.ui.home.MainActivity
+back AppleTV | in-app: com.apple.atve.androidtv.appletv/.MainActivity | result: 2 Backs | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Peacock | in-app: com.peacocktv.peacockandroid/com.peacock.peacocktv.GoogleMainActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+back Disney | in-app: com.disney.disneyplus/com.bamtechmedia.dominguez.main.MainActivity | result: 1 Back | final: com.spocky.projengmenu/.ui.home.MainActivity
+back BrowseHere | in-app: com.tcl.browser/.portal.home.activity.MainPageActivity | result: needs Home (Back did not exit) | final: com.spocky.projengmenu/.ui.home.MainActivity
+Note: apps that stay on Back are app behavior (login/profile/exit prompts); Home always returned to Projectivy.
+## Step 4 inputs + remote keycodes - Tue Oct 20 21:40:05 PDT 2026
+HDMI 1 from launcher -> com.tcl.tv/.TVActivity (nothing plugged in/black OK), Home returns to Projectivy: PASS. HDMI 2 -> com.tcl.tv/.TVActivity, Home returns: PASS (Back stays in TVActivity; app behavior).
+KEYCODE_SETTINGS -> com.android.tv.settings/.MainSettings PASS. KEYCODE_SEARCH -> katniss KeyboardSearchActivity PASS. KEYCODE_TV_INPUT, ASSIST, GUIDE, TV -> stay on Projectivy home (no visible action). KEYCODE_MENU -> Projectivy side panel.
+Tested re-enabling com.tcl.common.shortcutmenu (pm enable): TV_INPUT/ASSIST/SETTINGS results unchanged => not the cause; disabled again (pm disable-user). It only holds a customkey MainActivity + boot receiver.
+## Step 4 performance (video playing) - Tue Oct 20 21:42:43 PDT 2026
+gfxinfo after 30s+ D-pad scroll: see REPORT. baseline PSS 97454K. Home idle frames: moving.
+Tue Oct 20 21:43:17 PDT 2026 TEST enable com.android.htmlviewer: Package com.android.htmlviewer new state: enabled
+Tue Oct 20 21:43:17 PDT 2026 TEST disable com.android.htmlviewer: Package com.android.htmlviewer new state: disabled-user
+Tue Oct 20 21:43:18 PDT 2026 restore.sh rewritten: --dry-run added (ran OK, restore_dryrun.txt), list=35 pkgs matching pm list -d, adds dreamx, removes autopair/smartalexa/usercenter (enabled), sets screensaver_enabled=1, clears a11y setting. htmlviewer enable/disable path test passed.
+## Step 4 soak - Tue Oct 20 21:59:01 PDT 2026
+21:42:57 t0 PSS=99926 a11yBound=1 freeRAM=680,246K
+21:45:36 t2.5 PSS=111549 a11yBound=1 freeRAM=695,383K
+21:48:28 t5.5-after-3-switches PSS=106467 a11yBound=1 freeRAM=355,549K
+21:51:23 t8 PSS=106565 a11yBound=1 freeRAM=
+21:54:34 t11-after-6-switches PSS=113863 a11yBound=1 freeRAM=535,044K
+21:57:12 t13.5 PSS=115946 a11yBound=1 freeRAM=553,810K
+21:58:19 t15 PSS=115676 a11yBound=1 freeRAM=541,569K
+PSS growth t0->t15: 99926K -> 115676K = +15.8% (limit 30%). a11y bound at every sample. 6 app switches during the window.
+gfxinfo (30s D-pad scroll, video on): 4151 frames, 369 janky (8.89%), p50 10ms p90 13ms p95 24ms p99 30ms.
+Wake lock: Projectivy (uid 10098) holds PARTIAL_WAKE_LOCK 'ExoPlayer:WakeLockManager' while the video plays - expected with ExoPlayback; test says none => FLAG.
+Tue Oct 20 21:59:06 PDT 2026 REBOOT TEST (step 4): adb reboot; not touching a11y afterwards
+## Step 4 reboot test - Tue Oct 20 22:04:40 PDT 2026
+adb reboot. With NO changes after reboot: enabled_accessibility_services still lists Projectivy, BUT accessibility_enabled=0 => service NOT bound after every reboot. Video still PLAYED after the reboot (ExoPlayer wake lock cycling every ~30s, video codec registered for Projectivy pid; md5 of clean crop differed on every capture) - the saved wallpaper/video preference survived; the a11y service was not needed for playback to continue.
+Fix applied manually: settings delete secure enabled_accessibility_services; accessibility_enabled 0; wait 3s; put service; accessibility_enabled 1 => Bound. No lasting fix within approved actions: only a one-time 'pm grant com.spocky.projengmenu android.permission.WRITE_SECURE_SETTINGS' (not in my approvals; NOT run) would let Projectivy re-enable itself.
+App order after reboot verified by 4 strips: YouTube,Hulu,Netflix,HBO Max,Crunchyroll,Prime,Paramount+,Apple TV,Peacock,Disney+,BrowseHere,Safety Guard,TCL Home,TV,Twitch,Works with Alexa,Play Store (Play Store appeared after BrowseHere group at the end).
+Disabled package count now 35 (autopair re-enabled; shortcutmenu test re-enabled then disabled).
+Tue Oct 20 22:05:20 PDT 2026 Final wallpaper config (UI): Uri=file:///data/user/0/com.spocky.projengmenu/files/background (picker copied wallpaper_japan.mp4 into app storage; no /sdcard or Mac dependency), Video toggle ON. Re-pick the file in Projectivy to change wallpaper (editing /sdcard/Download won't update it).
+Tue Oct 20 22:28:02 PDT 2026 SETTINGS SHORTCUT task: icons: wifi->com.android.tv.settings/.connectivity.NetworkActivity; notif->projengmenu NotificationsSidePanelActivity; gear->projengmenu SettingsActivity side panel (has 'Android settings' entry -> com.android.tv.settings/.MainSettings). com.tcl.settings QUICKSETTINGS action shows no panel (no activity; BT_PAIR opens BluetoothPairActivity alone); com.tcl.dashboard is TCL Home hub, not settings. Projectivy: Appearance>Status Bar>Icons only has show/hide toggles, no action setting. No package state changed. Press count gear->Pair accessory dialog = 16.
+Tue Oct 20 22:28:03 PDT 2026 pm grant com.spocky.projengmenu android.permission.WRITE_SECURE_SETTINGS (undo: pm revoke); then adb reboot
+Tue Oct 20 22:28:20 PDT 2026 CORRECTION: the pm grant above FAILED (SecurityException: Package com.spocky.projengmenu has not requested permission android.permission.WRITE_SECURE_SETTINGS). Nothing was granted, nothing to revoke. Reboot was still issued (a11y_enabled was 1 before reboot).
+Tue Oct 20 22:29:54 PDT 2026 Post-reboot: Projectivy resumed; accessibility_enabled=0, Bound services {} (same as before; no grant in effect); ExoPlayer wake lock held; no package state changed -> restore.sh unchanged.
+Tue Oct 20 22:54:11 PDT 2026 REMOTE BUTTONS task: captured keys YouTube=4065 Netflix=4062 Prime=4099 AppleTV=4160 Settings=4077 (TclPhoneWindowManager.handleCustomKey). Enabling com.tcl.common.shortcutmenu + reboot to test: pm enable --user 0 com.tcl.common.shortcutmenu
+Tue Oct 20 22:58:30 PDT 2026 shortcutmenu enabled + reboot: injected 4065/4062/4099/4160/4077 still no action (not the handler). Policy code (tcl-service.jar TclCustomShortCutKeyManager) reads shortcutkeyList; com.tcl.partnercustomizer (disabled, has ConfigurationProvider + tkey activities) is next suspect. Running: pm enable --user 0 com.tcl.partnercustomizer; adb reboot
+Tue Oct 20 23:05:21 PDT 2026 REMOTE BUTTONS RESULT. Real presses (getevent scan -> TCL keycode, from TclPhoneWindowManager.handleKeyBeforeQueueing): YouTube 0xc0057 KEY_DISPLAY_OFF -> 4065; Netflix 0xc0051 KEY_VIDEO_PREV -> 4062; Prime Video 0xc005f KEY_PRIMEVIDEO -> 4099; Apple TV 0xc0086 KEY_APPLETV -> 4160; Settings 0xc0055 KEY_FORWARDMAIL -> 4077. Device BT_RC813_M1 (Generic.kl, Vendor_0417_Product_0304.idc). Captures: buttons_getevent.txt, buttons_logcat.txt.
+App keys: TclCustomShortCutKeyManager.handleCustomKey -> startYouTube/startNetflix/startPrimeVideo/startAppleTV -> sendBroadcast com.google.global_button.ACTION_LAUNCH_APP to com.google.android.apps.tv.launcherx/.globalbutton.GlobalButtonLaunch_Receiver (stock launcher, disabled, off limits). Nothing else receives it. Settings 4077: only supportUserActionCollect, no launch call.
+Tests: enabled com.tcl.common.shortcutmenu + reboot -> no change; enabled com.tcl.partnercustomizer + reboot -> no change; both disabled again (pm disable-user --user 0). Injected keycodes reach the same handler as the real remote (device -1 vs 8). Disabled list identical to before this task; restore.sh unchanged, --dry-run rerun OK.
+Post-reboot: a11y reset to 0 again; re-bound with delete/put cycle -> Bound; Projectivy home, video moving, app order intact (TV Apps row: YouTube, Hulu, Netflix, HBO Max, Crunchyroll, Prime, Paramount+).
